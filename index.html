@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羞涩测评 - 每一种好奇值得被认真探索</title>
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #faf6f2;
+            color: #5a4a42;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #e8b4b8;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #d8a0a4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .option-btn {
+            border: 1px solid #e8b4b8;
+            transition: all 0.3s ease;
+        }
+        
+        .option-btn:hover {
+            background-color: #f8e0e2;
+        }
+        
+        .option-btn.selected {
+            background-color: #e8b4b8;
+            color: white;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: #f0e6e6;
+            border-radius: 3px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #e8b4b8;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .result-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        .bottle {
+            width: 30px;
+            background-color: #f0e6e6;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: #e8b4b8;
+            transition: height 0.5s ease;
+        }
+        
+        .question-box {
+            background-color: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .option-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        @media (max-width: 640px) {
+            .question-text {
+                font-size: 16px;
+            }
+            
+            .option-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 首页 -->
+        <div id="home-page" class="text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-6 text-[#5a4a42]">每一种好奇值得被认真探索</h1>
+            <div class="flex justify-center mb-6">
+                <img src="https://lf-code-agent.coze.cn/obj/x-ai-cn/page_image/fd28aa43d8ab16f3d37ccd048067fca6.png" 
+                     alt="测评封面图" 
+                     class="w-1/2 rounded-full object-cover aspect-square">
+            </div>
+            <p class="text-lg md:text-xl mb-8 text-[#7a6a62]">
+                在亲密互动中<br>
+                你是否会喜欢羞涩的感觉<br>
+                如果是<br>
+                这份问卷可以和你一起探究一部分的自己<br>
+                Don't worry<br>
+                这种喜欢不奇怪，它很具体
+            </p>
+            <button id="start-btn" class="btn-primary px-8 py-3 rounded-full text-lg font-medium">开始探索</button>
+        </div>
+
+        <!-- 问卷区 -->
+        <div id="survey-page" class="hidden">
+            <h2 class="text-2xl font-bold mb-6 text-center text-[#5a4a42]">想象你是否会喜欢下列场景</h2>
+            
+            <div class="progress-bar mb-6">
+                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
+            
+            <div id="question-container" class="space-y-4">
+                <!-- 问题将通过JS动态生成 -->
+            </div>
+            
+            <div class="flex justify-between mt-8">
+                <button id="prev-btn" class="px-6 py-2 rounded-full border border-[#e8b4b8] text-[#e8b4b8] font-medium hidden">上一页</button>
+                <button id="next-btn" class="px-6 py-2 rounded-full border border-[#e8b4b8] text-[#e8b4b8] font-medium">下一页</button>
+            </div>
+        </div>
+
+        <!-- 结果展示区 -->
+        <div id="result-page" class="hidden">
+            <h2 class="text-2xl font-bold mb-8 text-center text-[#5a4a42]">你的羞涩测评结果</h2>
+            
+            <div class="space-y-8">
+                <!-- 区块1 -->
+                <div id="result-type" class="result-card p-6 hidden">
+                    <h3 class="text-xl font-bold mb-4 text-[#5a4a42]">什么样的反差令你心动</h3>
+                    <div id="type-content" class="space-y-4"></div>
+                </div>
+                
+                <!-- 区块2 -->
+                <div id="result-method" class="result-card p-6 hidden">
+                    <h3 class="text-xl font-bold mb-4 text-[#5a4a42]">什么样的方式能强化你的感受</h3>
+                    <div id="method-content" class="space-y-4"></div>
+                </div>
+                
+                <!-- 区块3 -->
+                <div id="result-bottle" class="result-card p-6">
+                    <h3 class="text-xl font-bold mb-4 text-center text-[#5a4a42]">亲密玩法小瓶子</h3>
+                    <div class="flex justify-center">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <div class="bottle mx-auto mb-2" style="height: 120px;">
+                                    <div id="bottle-1" class="water" style="height: 0%"></div>
+                                </div>
+                                <p class="text-sm">被迫变"凉快"</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="bottle mx-auto mb-2" style="height: 120px;">
+                                    <div id="bottle-2" class="water" style="height: 0%"></div>
+                                </div>
+                                <p class="text-sm">严肃的训话</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="bottle mx-auto mb-2" style="height: 120px;">
+                                    <div id="bottle-3" class="water" style="height: 0%"></div>
+                                </div>
+                                <p class="text-sm">按"规矩"训诫</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="bottle mx-auto mb-2" style="height: 120px;">
+                                    <div id="bottle-4" class="water" style="height: 0%"></div>
+                                </div>
+                                <p class="text-sm">沉默的注视</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="bottle mx-auto mb-2" style="height: 120px;">
+                                    <div id="bottle-5" class="water" style="height: 0%"></div>
+                                </div>
+                                <p class="text-sm">brat的教训</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="bottle mx-auto mb-2" style="height: 120px;">
+                                    <div id="bottle-6" class="water" style="height: 0%"></div>
+                                </div>
+                                <p class="text-sm">"正经"的反差</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="bottle mx-auto mb-2" style="height: 120px;">
+                                    <div id="bottle-7" class="water" style="height: 0%"></div>
+                                </div>
+                                <p class="text-sm">被抓包心慌慌</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="bottle mx-auto mb-2" style="height: 120px;">
+                                    <div id="bottle-8" class="water" style="height: 0%"></div>
+                                </div>
+                                <p class="text-sm">红温aftercare</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="bottle mx-auto mb-2" style="height: 120px;">
+                                    <div id="bottle-9" class="water" style="height: 0%"></div>
+                                </div>
+                                <p class="text-sm">直视我的眼睛</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 区块4 -->
+                <div id="result-combo" class="result-card p-6 hidden">
+                    <h3 class="text-xl font-bold mb-4 text-[#5a4a42]">我最喜欢的组合</h3>
+                    <div id="combo-content" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="mt-12 py-6 text-center text-[#7a6a62]">
+        <p>Designed by 👿Jenny&是树🌲</p>
+    </footer>
+
+    <script>
+        // 问卷数据
+        const questions = [
+            // 第1页
+            [
+                "在对方安静专注的目光下，缓慢脱去衣服的过程，我能体会到心理上明确的拉扯感",
+                "走廊里灯光昏暗，把对方把我的眼睛蒙上然后拉到镜子前面，揭开后让我看着镜子里羞涩的自己",
+                "被对方冷下声音，严肃要求'脱掉某件衣服'，并要求自己说出现在是什么身份，等下要被怎么样",
+                "当裙子被卷到腰间，对方问'今天是乖小孩吗，为什么裙子会在腰间呢'",
+                "衣物被部分推开，露出局部皮肤感知到空调的凉意，比全裸更让我害羞。",
+                "短裤挂在脚踝，行动时有明显的拘束感，但是不能完全脱掉。"
+            ],
+            // 第2页
+            [
+                "在会议室里突然接到对方的电话，听筒对面低声喊出了你们约定的特殊称呼",
+                "在安静的空间里，被示意捧起戒尺站在墙角，对方沉默的注视让我觉得紧张。",
+                "在路上撒娇，被威胁再不听话要挨揍的时候，小声地说'我错了不罚了好不好'",
+                "对方笑着看着我说，有的人在外面正儿八经，而回到家就是我的puppy呢",
+                "当我被要求保持跪姿，被牵引着跟随时，会觉得害羞。",
+                "在身体接触中被引导到'宠物'等姿态，会让我有强烈的羞耻感。"
+            ],
+            // 第3页
+            [
+                "当对方故意停顿、沉默，似乎在等我承认内心的小心思时，我会感到脸热。",
+                "对方在书桌上放置戒尺，并用表情暗示'今天一定不会好过'，让我觉得无处可逃。",
+                "对方逼问我'想要什么，说出来才可能得到哦'，会让我变得更加渴望",
+                "对方要求我反复且清晰陈述自己的想法和错误时，我觉得张不开口，在被迫说出后会更加害羞。",
+                "对方靠近我的耳边，呼吸声清晰可见，说话的温热的气息扑在耳朵，会让我更红温。",
+                "在我还没承认之前，对方抬起我的下巴要求直视眼睛，会让我羞得想躲。"
+            ]
+        ];
+
+        // 组合解读数据
+        const comboInterpretations = {
+            "氛围*衣着反差": "在这种场景里，主动方不需要说话，只是用沉默高压的氛围，就让被动方感到自己的身体是否被遮挡、是否暴露，感受被无限放大。没有语言，也没有动作，但那种无声的注视和氛围，会让被动方对自身的状态高度敏感。即使只是衣物的松动或轻微的肌肤显露，也会在安静的环境中被无限夸张，从而产生羞耻感😳。\n\n这种羞耻感的本质，是“被看见的可能性”，而不是实际的暴露行为。主动方不需要描述，也不需要揭开遮挡，反而是沉默本身制造了张力：仿佛一切都被看透，却又什么都没发生💭。这让被动方的大脑自动填充画面，产生自我暴露感。\n\n性格层面来看，这种偏好的人往往对外界目光感知敏锐。他们在日常生活中可能也会注意仪表、在乎别人的看法，因此当环境突然静默时，他们的自我意识会被放大，羞耻也随之倍增🌟。很多人都会在安静和注视中感到“被看透”，甚至会下意识地感到紧张。将这种感受放在亲密关系中，只是让它被转化为一种更强烈的体验。能够喜欢这样的氛围，说明你对感官和细节有很高的敏感度，这是珍贵的一种特质💖。",
+            "语言*衣着反差": "当主动方用语言直接描述被动方的身体状态时，例如“你现在的姿态完全被看到”，羞耻感会被进一步放大。被动方无法再用模糊或自我安慰的方式来缓解紧张，因为语言将事实明确化，让暴露成为无法回避的现实😳。\n\n这种体验带来的心理反应是强烈的自我意识：你会立刻感觉到“我被看见了”，羞耻感与自我意识同时上升。这是一种常见的心理现象，人们在被别人用语言确认时，会比单纯自我意识更深切地感受到自身状态💬。情绪上，你完全可以允许自己感到羞怯或心跳加速，这是对安全关系中“可被看见”的自然反应💖。\n\n性格上，这类偏好的人往往需要清晰的外部确认。语言让状态具体化，满足了心理上对“事实被认知”的需求。在关系中，这是一种建立信任和互动深度的方式：主动方用语言确认状态，既不会伤害你，也能让你体验到被理解和安全地释放情绪😊。  ",
+            "身体*衣着反差": "当主动方通过动作使被动方的身体完全暴露或失去遮掩时，羞耻感会显得非常直接和强烈。被动方无法通过遮掩或姿态调整来降低暴露感，整个体验完全由主动方的动作控制😳。\n\n心理上，这种羞耻感带有明显的“失控”体验：你意识到自己无法左右身体状态，也无法否认当前的情况，你甚至没有机会选择“何时暴露”，而是被迫承认“现在就是被看见”。这种体验在很多人身上都很常见：在安全的亲密关系中，被动方愿意交出一定控制权，以体验羞耻与信任交织的感觉💭。\n\n性格上，这表明这类偏好的人倾向在控制被剥夺时体验情绪张力。需要明确的是，这份羞耻感来源于安全的互动，能够在亲密环境中安全地交出部分控制权，本身就是探索内心、建立信任的重要过程🤝。 ",
+            "氛围*身份反差": "在这种场景里，主动方并不需要说话或直接触碰，而是通过一种凝固的沉默氛围，制造出强烈的压迫感。被动方在平日里或许习惯扮演理智、稳重、可靠的社会角色，而当环境骤然安静、空气变得紧张时，他会在内心感受到自己的“日常身份”逐渐被剥离。这种沉默像是一面无声的镜子，让他不得不去面对与平时形象的巨大反差。\n\n羞耻的来源，不是因为别人真的指出或质疑，而是因为主动方的“安静在场”本身，就像在提醒被动方：你和那个日常自我已经出现了断裂。越是不说话，越让被动方在内心展开自我审视与比较，从而让羞耻感逐渐堆叠。\n\n从心理学的角度来说，这并不罕见。许多人在生活中会为自己设定“社会角色”，当这个角色被暂时卸下，就会感到既羞耻又轻松。这种偏好说明被动方通常具有较高的自我要求，对社会身份的维护很在意，因此在反差的氛围下更容易被触动。请放心，这是一种相当常见的心理需求，它反映的不是“异常”，而是人内心对控制与释放之间的张力。沉默的高压，只是让这种张力被更清晰地体验出来。   ",
+            "语言*身份反差": "在这种场景里，主动方用清晰的语言把被动方的身份反差点出来，例如“平时你总是稳重理性，现在却完全不同”。这种直接的言语描述让羞耻感立刻具体化，因为你无法否认，也没有退路可以掩饰。每一个词都像是一面镜子，把你平日维护的形象暴露在现实面前💬。\n\n心理上，这种羞耻感往往伴随内心的慌乱和轻微的紧张。你清楚地意识到自己的落差，这种被“点破”的体验可能让你既羞怯又兴奋💖，许多人在亲密关系中都会渴望有人能够识破自己隐藏的一面。\n\n性格上，这说明被动方平时可能对身份和形象有较强的维护欲望。他们希望自己在外界眼中有一定的控制感，但同时潜意识里也渴望有人可以突破这种防线，看到真实的自己。这种对羞耻感喜爱是常见和应当被自我愉悦接纳的，它体现的是心理深度和对信任关系的需求，是面向内心深处的探索🌟。 ",
+            "身体*身份反差": "在这种场景下，主动方通过动作或姿态的引导，让被动方处于与平日社会身份截然不同的状态。例如，被动方平时习惯保持稳重与自律，而此刻却被引导呈现出柔弱或服从的姿态。身体上的这种强制，使得身份落差被直接体现出来😳。\n\n心理上，这种羞耻感源于失去控制的体验：你无法依靠语言或外表维持日常形象，只能面对被放大的身份反差。尽管可能感到心跳加速或局促不安，这完全是一种常见的心理反应💭。很多人在安全关系中都会体验到类似的身份坍塌带来的羞耻感，这本身是心理上的探索和释放。\n\n性格上，这类偏好的人平时可能高度自律或自我要求强，但在亲密关系中渴望有人能引导他们暂时放下这些防线。被动方对体验羞耻的偏好是安全环境下心理张力的自然释放，是探索自我不同面的一种方式🤝。 ",
+            "氛围*想法反差": "当主动方在氛围里保持沉默，被动方会下意识觉得自己的心思被无声地识破。没有质问，没有直接说出口，但那份安静本身，就像是默默的“抓包”😳。这种情况下的羞耻，并不依赖于身体的暴露，而是依赖于心理层面的“你心里在想什么，我都知道”。\n\n被动方越是想掩饰，就越觉得沉默像一层无形的网，把自己的小心思牢牢困住。主动方不需要开口解释，甚至一个眼神都可能让被动方心虚💭。这种感受比直接点破更强烈，因为主动方没有给予出口或缓冲，被动方只能在心里不断加深那种“被识破”的无助。\n\n性格上，这类偏好说明被动方内心世界比较细腻。他们平时可能习惯隐藏真实的欲望、冲动或者小弱点，保持着克制的外表。然而，他们又潜意识渴望有人能突破外壳、看穿内心。沉默的氛围正好满足了这种张力：既保留了表面完整，又让内心的秘密在“无声的抓住”中被揭开🤐。 ",
+            "语言*想法反差": "当主动方用语言直接揭示被动方的心理小秘密时，例如“你就是想要这样，对吗？”或者“你心里一直期待这个吧？”这种直言不讳的抓包，让你瞬间心慌，你可能会惊讶于自己的欲望被识别，也可能在羞怯中产生轻微兴奋😳。你无法否认，因为那的确是你心里的真实，只是你平时想隐藏。\n\n心理上，这种羞耻伴随强烈的“被看穿”感，这是被看透又被承认的体验，常常让人紧张，但也有安全感，因为主动方通过语言展示理解和接纳💬。这表明潜意识中非常渴望被理解，需要有人替他说出那些你不敢说的欲望，他并不怕被读懂，反而在被戳破时体验到快感💖。\n\n性格上，被动方可能平时内敛或克制，习惯隐藏内心欲望，但在亲密关系中希望有人能以理解的方式触碰这些秘密。在关系中，被动方会期待伴侣敢于戳破欲望，不留余地，把小秘密用语言拉到台面上，让他没法再假装不在乎💬。 ",
+            "身体*想法反差": "在这一组合中，主动方通过身体引导或动作，让被动方的小心思、心理反应被直接显现。例如，通过姿势或动作使被动方的真实感受或欲望被“无声验证”🤐。这种情况下的羞耻感，源自心理和身体的双重曝光：内心的小秘密被确认，身体的状态也被展示。\n\n心理上，被动方会感到“秘密被曝光”，因为身体已经无法隐藏，它直接出卖了你，虽然想否认，但动作本身就是最直接的证据😳。羞涩在这里和兴奋紧密结合，被动方会一边觉得丢脸，一边无法抗拒💖。\n\n性格上，这类偏好的人可能在平时克制欲望或隐藏心理，但在这种互动中愿意让主动方引导，从而体验到自我被理解和接纳的复杂感受💭。这是常见且健康的心理需求体现：许多人都希望在安全关系中被理解和“看穿”，而这种体验能让他们感到被关注和理解💖。 "
+        };
+
+        // 用户答案
+        const answers = Array(18).fill(0);
+        let currentPage = 0;
+
+        // DOM元素
+        const homePage = document.getElementById('home-page');
+        const surveyPage = document.getElementById('survey-page');
+        const resultPage = document.getElementById('result-page');
+        const questionContainer = document.getElementById('question-container');
+        const progressFill = document.getElementById('progress-fill');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const startBtn = document.getElementById('start-btn');
+
+        // 初始化问卷
+        function initSurvey() {
+            homePage.classList.add('hidden');
+            surveyPage.classList.remove('hidden');
+            renderQuestions(currentPage);
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+
+        // 渲染问题
+        function renderQuestions(page) {
+            questionContainer.innerHTML = '';
+            
+            questions[page].forEach((q, index) => {
+                const questionIndex = page * 6 + index;
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-box';
+                
+                questionDiv.innerHTML = `
+                    <p class="question-text mb-3">${q}</p>
+                    <div class="option-grid">
+                        <button class="option-btn px-4 py-2 rounded-full ${answers[questionIndex] === 1 ? 'selected' : ''}" data-index="${questionIndex}" data-value="1">非常讨厌</button>
+                        <button class="option-btn px-4 py-2 rounded-full ${answers[questionIndex] === 2 ? 'selected' : ''}" data-index="${questionIndex}" data-value="2">一般无感</button>
+                        <button class="option-btn px-4 py-2 rounded-full ${answers[questionIndex] === 3 ? 'selected' : ''}" data-index="${questionIndex}" data-value="3">比较喜欢</button>
+                        <button class="option-btn px-4 py-2 rounded-full ${answers[questionIndex] === 4 ? 'selected' : ''}" data-index="${questionIndex}" data-value="4">非常喜欢</button>
+                    </div>
+                `;
+                
+                questionContainer.appendChild(questionDiv);
+            });
+            
+            // 添加选项点击事件
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    const value = parseInt(this.dataset.value);
+                    
+                    // 更新答案
+                    answers[index] = value;
+                    
+                    // 更新按钮样式
+                    document.querySelectorAll(`[data-index="${index}"]`).forEach(b => {
+                        b.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                });
+            });
+            
+            // 更新导航按钮状态
+            prevBtn.classList.toggle('hidden', page === 0);
+            nextBtn.textContent = page === questions.length - 1 ? '查看结果' : '下一页';
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const answeredCount = answers.filter(a => a > 0).length;
+            const progress = (answeredCount / answers.length) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
+
+        // 计算得分
+        function calculateScores() {
+            const typeScores = {
+                "衣着反差": 0,
+                "身份反差": 0,
+                "想法反差": 0
+            };
+            
+            const methodScores = {
+                "氛围": 0,
+                "语言": 0,
+                "身体": 0
+            };
+            
+            const comboScore = {
+                "氛围*衣着反差": 0,
+                "语言*衣着反差": 0,
+                "身体*衣着反差": 0,
+                "氛围*身份反差": 0,
+                "语言*身份反差": 0,
+                "身体*身份反差": 0,
+                "氛围*想法反差": 0,
+                "语言*想法反差": 0,
+                "身体*想法反差": 0
+            };
+            
+            // 计算类型和方法得分
+            questions.forEach((page, pageIndex) => {
+                page.forEach((q, qIndex) => {
+                    const answerIndex = pageIndex * 6 + qIndex;
+                    // 根据问题顺序确定类型和方法
+                    let type, method;
+                    if (pageIndex === 0) {
+                        type = "衣着反差";
+                        if (qIndex < 2) method = "氛围";
+                        else if (qIndex < 4) method = "语言";
+                        else method = "身体";
+                    } else if (pageIndex === 1) {
+                        type = "身份反差";
+                        if (qIndex < 2) method = "氛围";
+                        else if (qIndex < 4) method = "语言";
+                        else method = "body";
+                    } else {
+                        type = "想法反差";
+                        if (qIndex < 2) method = "氛围";
+                        else if (qIndex < 4) method = "语言";
+                        else method = "身体";
+                    }
+                    
+                    typeScores[type] += answers[answerIndex];
+                    methodScores[method] += answers[answerIndex];
+                });
+            });
+            
+            // 计算组合得分
+            comboScore["氛围*衣着反差"] = typeScores["衣着反差"] * methodScores["氛围"];
+            comboScore["语言*衣着反差"] = typeScores["衣着反差"] * methodScores["语言"];
+            comboScore["身体*衣着反差"] = typeScores["衣着反差"] * methodScores["身体"];
+            comboScore["氛围*身份反差"] = typeScores["身份反差"] * methodScores["氛围"];
+            comboScore["语言*身份反差"] = typeScores["身份反差"] * methodScores["语言"];
+            comboScore["身体*身份反差"] = typeScores["身份反差"] * methodScores["身体"];
+            comboScore["氛围*想法反差"] = typeScores["想法反差"] * methodScores["氛围"];
+            comboScore["语言*想法反差"] = typeScores["想法反差"] * methodScores["语言"];
+            comboScore["身体*想法反差"] = typeScores["想法反差"] * methodScores["身体"];
+            
+            return { typeScores, methodScores, comboScore };
+        }
+        // Formspree 表单地址
+        const FORMSPREE_URL = "https://formspree.io/f/mjkoqoya";
+        // 显示结果
+        function showResults() {
+            const { typeScores, methodScores, comboScore } = calculateScores();
+            
+            surveyPage.classList.add('hidden');
+            resultPage.classList.remove('hidden');
+            window.scrollTo(0, 0);
+
+                    const payload = {
+            userAnswers: answers,   // 用户逐题选项
+            typeScores,             // 类型分数
+            methodScores,           // 方法分数
+            comboScore,             // 综合分数
+            timestamp: new Date().toISOString()
+            };
+            fetch(FORMSPREE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+            })
+            .then(res => {
+            if (res.ok) {
+                console.log("数据提交成功");
+            } else {
+                console.error("提交失败", res.statusText);
+            }
+            })
+            .catch(err => console.error("网络错误", err));
+            
+            // 区块1: 喜欢的反差类型
+            const typeContent = document.getElementById('type-content');
+            typeContent.innerHTML = '';
+            
+            if (typeScores["衣着反差"] > 14) {
+                typeContent.innerHTML += `
+                    <div class="p-4 bg-[#f8f0ee] rounded-lg">
+                        <h4 class="font-bold mb-2">衣着反差</h4>
+                        <p class="text-sm">脱掉"穿在身上的遮挡"→ 涉及外在形象、服饰、身体的暴露感。</p>
+                    </div>
+                `;
+            }
+            
+            if (typeScores["身份反差"] > 14) {
+                typeContent.innerHTML += `
+                    <div class="p-4 bg-[#f8f0ee] rounded-lg">
+                        <h4 class="font-bold mb-2">身份反差</h4>
+                        <p class="text-sm">摘下"正经社交的面具"→ 涉及平时严肃/理智/专业的外在形象与游戏形象的反差感。</p>
+                    </div>
+                `;
+            }
+            
+            if (typeScores["想法反差"] > 14) {
+                typeContent.innerHTML += `
+                    <div class="p-4 bg-[#f8f0ee] rounded-lg">
+                        <h4 class="font-bold mb-2">想法反差</h4>
+                        <p class="text-sm">暴露"藏起来的小心思"→ 涉及隐秘的欲望、幻想、弱点被察觉或暴露的心理赤裸感。</p>
+                    </div>
+                `;
+            }
+            
+            if (typeContent.innerHTML === '') {
+                typeContent.innerHTML = `
+                    <div class="p-4 bg-[#f8f0ee] rounded-lg">
+                        <p class="text-sm">我没有猜到你特别钟爱的反差类型呢</p>
+                    </div>
+                `;
+            }
+            document.getElementById('result-type').classList.remove('hidden');
+            
+            // 区块2: 喜欢的方式
+            const methodContent = document.getElementById('method-content');
+            methodContent.innerHTML = '';
+            
+            if (methodScores["氛围"] > 14) {
+                methodContent.innerHTML += `
+                    <div class="p-4 bg-[#f8f0ee] rounded-lg">
+                        <h4 class="font-bold mb-2">氛围</h4>
+                        <p class="text-sm">沉默的施压，通过环境、仪式感、情境设定等方式让人自然进入羞耻状态。</p>
+                    </div>
+                `;
+            }
+            
+            if (methodScores["语言"] > 14) {
+                methodContent.innerHTML += `
+                    <div class="p-4 bg-[#f8f0ee] rounded-lg">
+                        <h4 class="font-bold mb-2">语言</h4>
+                        <p class="text-sm">通过称呼、直接描述、逼问、挑逗话语触发羞涩的感觉。</p>
+                    </div>
+                `;
+            }
+            
+            if (methodScores["身体"] > 14) {
+                methodContent.innerHTML += `
+                    <div class="p-4 bg-[#f8f0ee] rounded-lg">
+                        <h4 class="font-bold mb-2">身体</h4>
+                        <p class="text-sm">借由动作制造被迫感与无处可逃感。</p>
+                    </div>
+                `;
+            }
+            
+            if (methodContent.innerHTML === '') {
+                methodContent.innerHTML = `
+                    <div class="p-4 bg-[#f8f0ee] rounded-lg">
+                        <p class="text-sm">还不太确定你是否喜欢羞耻的感受，如果不喜欢，亲密关系中就不需要强化哦</p>
+                    </div>
+                `;
+            }
+            document.getElementById('result-method').classList.remove('hidden');
+            
+            // 区块3: 瓶子图 - 更新计算逻辑
+            Object.keys(comboScore).forEach((key, index) => {
+                const score = comboScore[key];
+                const height = Math.max(0, ((score - 16) / (576 - 16)) * 100);
+                document.getElementById(`bottle-${index + 1}`).style.height = `${height}%`;
+            });
+            
+            // 区块4: 最喜欢的组合
+            const comboContent = document.getElementById('combo-content');
+            comboContent.innerHTML = '';
+            
+            // 筛选得分≥144的组合并按得分从高到低排序
+            const filteredCombos = Object.entries(comboScore)
+                .filter(([_, score]) => score >= 144)
+                .sort((a, b) => b[1] - a[1]);
+            
+            // 只显示得分最高的组合
+            if (filteredCombos.length > 0) {
+                const [combo, score] = filteredCombos[0];
+                
+                comboContent.innerHTML += `
+                    <div class="p-4 bg-[#f8f0ee] rounded-lg">
+                        <h4 class="font-bold mb-2">${combo}</h4>
+                        <p class="text-sm whitespace-pre-line">${comboInterpretations[combo]}</p>
+                    </div>
+                `;
+                
+                document.getElementById('result-combo').classList.remove('hidden');
+            }
+        }
+
+        // 事件监听
+        startBtn.addEventListener('click', initSurvey);
+        
+        prevBtn.addEventListener('click', function() {
+            if (currentPage > 0) {
+                currentPage--;
+                renderQuestions(currentPage);
+                updateProgress();
+                window.scrollTo(0, 0);
+            }
+        });
+        
+        nextBtn.addEventListener('click', function() {
+            // 检查当前页是否已回答所有问题
+            const startIndex = currentPage * 6;
+            const endIndex = startIndex + 6;
+            const pageAnswers = answers.slice(startIndex, endIndex);
+            
+            if (pageAnswers.includes(0)) {
+                alert('请回答当前页的所有问题后再继续');
+                return;
+            }
+            
+            if (currentPage < questions.length - 1) {
+                currentPage++;
+                renderQuestions(currentPage);
+                updateProgress();
+                window.scrollTo(0, 0);
+            } else {
+                showResults();
+            }
+        });
+    </script>
+</body>
+</html>
